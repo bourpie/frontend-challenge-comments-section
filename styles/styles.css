@@ -38,17 +38,24 @@ body {
     max-width: 800px;
 }
 
+.comments-replies-list {
+    padding-left: 2rem;
+    border-left: 2px solid var(--LightGray);
+}
+
 .comment-item {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas:
+        "header header header"
+        "main main main"
+        "aside footer footer";
     background-color: var(--White);
     color: var(--GrayishBlue);
     border-radius: 0.75rem;
     margin-bottom: 1rem;
+    gap: 1rem;
     padding: 1rem;
-}
-
-.reply {
-    padding-left: 2rem;
-    border-left: 2px solid var(--LightGray);
 }
 
 .comment-userimage {
@@ -56,10 +63,63 @@ body {
     height: auto
 }
 
-.comment-user {
+.comment-header {
+    grid-area: header;
     color: var(--DarkBlue)
+}
+.comment-aside {
+    grid-area: aside;
+    background-color: var(--VeryLightGray);
+    padding: .25rem .5rem;
+    max-width: 5rem;
+    border-radius: .5rem;
 }
 
 .comment-content {
+    grid-area: main;
+    font-size: 1.25rem;
+    line-height: 1.5;
+}
+
+.comment-footer {
+    grid-area: footer;
+    margin-left: auto
+}
+
+.comment-btn {
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    color: var(--ModerateBlue);
+    font-weight: 500;
+    gap: .5rem;
+    cursor: pointer;
+
+}
+
+.comment-delete-btn {
+    color: var(--SoftRed);
+}
+
+.comment-score-number {
+    font-weight: 500;
+    color: var(--GrayishBlue);
+}
+
+@media screen and (min-width: 600px) {
+    .comment-item {
+        grid-template-columns: 2rem 1fr 1fr;
+        grid-template-areas:
+            "aside header footer"
+            "aside main main";
+    }
+
+    .comment-aside {
+        grid-area: aside;
+        width: auto;
+        flex-direction: column;
+        max-height: 5rem;
+        gap: 0;
+    }
 
 }

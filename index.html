@@ -19,7 +19,7 @@
       <li class="comment" v-for="comment in comments" :key="comment.id">
         <comment :comment="comment"></comment>
         <ol>
-          <li class="reply" v-for="reply in comment.replies" :key="reply.id">
+          <li class="comments-replies-list" v-for="reply in comment.replies" :key="reply.id">
             <comment :comment="reply"></comment>
           </li>
         </ol>
@@ -32,22 +32,41 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   <script>
 
+    const score = {
+      props: ['score'],
+      template: `
+        <aside class="comment-aside flex">
+            <button class="comment-btn" @click="plus" aria-label="plus">&plus;</button>
+            <span aria-live="polite" aria-label="Score" class="comment-score-number">{{ !score ? 0 : score }}</span>
+            <button class="comment-btn" @click="minus" aria-label="minus">&minus;</button>
+          </aside>
+        `      
+    }
+
     Vue.component('comment', {
       props: ['comment'],
+      components: {
+        score
+      },
       template: `
         <article class="comment-item">
-          <header class="comment-user flex">
+          <header class="comment-header flex">
             <img class="comment-userimage" :src="comment.user.image.png" :alt="'photo of ' + comment.user.username ">
             <h3 class="comment-username">{{ comment.user.username }}</h3>
+            <span v-if="comment.user.username === 'juliusomo'" class="comment-header-me">You</span>
             <span class="comment-createdAt">{{ comment.createdAt }}</span>
           </header>
           <main class="comment-content">{{ comment.content }}</main>
+          <score />
           <footer class="flex comment-footer">
-            <div class="comment-score">{{ comment.score }}</div>
-            <button class="comment-reply-btn">Reply</button>
+            <button v-if="comment.user.username !== 'juliusomo'" class="comment-btn comment-reply-btn flex"><img src="../images/icon-reply.svg" alt=""/> Reply</button>
+            <div class="flex" v-if="comment.user.username === 'juliusomo'">
+              <button class="comment-btn comment-delete-btn flex"><img src="../images/icon-delete.svg" alt=""/>Delete</button>              
+              <button class="comment-btn comment-edit-btn flex"><img src="../images/icon-edit.svg" alt=""/>Edit</button>
+            </div>
           </footer>
         </article>`
-    })
+    });
 
     var vm = new Vue({
       el: '#app',
