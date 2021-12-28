@@ -17,14 +17,15 @@
   <main id="app">
     <ol class="comments" aria-label="Comments">
       <li class="comment" v-for="comment in comments" :key="comment.id">
-        <comment :comment="comment"></comment>
+        <comment :comment="comment" :me="currentUser"></comment>
         <ol>
           <li class="comments-replies-list" v-for="reply in comment.replies" :key="reply.id">
-            <comment :comment="reply"></comment>
+            <comment :comment="reply" :me="currentUser" ></comment>   
           </li>
         </ol>
       </li>
     </ol>
+    <comment-form :me="currentUser" />
   </main>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.24.0/axios.min.js"
     integrity="sha512-u9akINsQsAkG9xjc1cnGF4zw5TFDwkxuc9vUp5dltDWYCSmyd0meygbvgXrlc/z7/o4a19Fb5V0OUE58J7dcyw=="
@@ -32,47 +33,109 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   <script>
 
+    const commentHeader = {
+      props: ['comment', 'me'],
+      template: `
+        <header class="comment-header flex">
+            <img class="comment-userimage" :src="comment.user.image.png" :alt="'photo of ' + comment.user.username ">
+            <h3 class="comment-username">{{ comment.user.username }}</h3>
+            <span v-if="comment.user.username === me" class="comment-header-me">You</span>
+            <span class="comment-createdAt">{{ comment.createdAt }}</span>
+          </header>
+      `
+    }
+
     const score = {
-      props: ['score'],
+      data() {
+        return {
+          score: 0,
+        }
+      },
       template: `
         <aside class="comment-aside flex" aria-label="Score">
             <button class="comment-btn" @click="plus">&plus;</button>
-            <span aria-live="polite" class="comment-score-number">{{ !score ? 0 : score }}</span>
+            <span aria-live="polite" class="comment-score-number">{{ score }}</span>
             <button class="comment-btn" @click="minus" >&minus;</button>
           </aside>
-        `      
+        `,
+      methods: {
+        plus() {
+          this.score += 1;
+          this.$emit('plus')
+        },
+        minus() {
+          this.score -= 1;
+          this.$emit('minus')
+        }
+      }      
     }
 
-    Vue.component('comment', {
-      props: ['comment'],
+    const commentForm = {
+      name: 'commentForm',
+      props: ['me'],
+      template: `
+        <form class="comment-form comment-item">
+          <img class="comment-userimage" :src="me.image.png" alt="me.username ">
+          <textarea class="comment-textarea" placeholder="Write a comment..."></textarea>
+          <button class="comment-send-btn">Send</button>
+        </form>
+      `,
+      mounted: function () {
+        console.log("MEEEEEE : ", this.me)
+      },
+    };
+
+    const comment = {
+      name: 'comment',
+      props: ['comment', 'me'],
+      data() {
+        return {
+          writing: false,
+        }
+      },
       components: {
-        score
+        score,
+        commentHeader,
+        commentForm,
       },
       template: `
-        <article class="comment-item">
-          <header class="comment-header flex">
-            <img class="comment-userimage" :src="comment.user.image.png" :alt="'photo of ' + comment.user.username ">
-            <h3 class="comment-username">{{ comment.user.username }}</h3>
-            <span v-if="comment.user.username === 'juliusomo'" class="comment-header-me">You</span>
-            <span class="comment-createdAt">{{ comment.createdAt }}</span>
-          </header>
-          <div class="comment-content">{{ comment.content }}</div>
-          <score />
-          <footer class="flex comment-footer">
-            <button v-if="comment.user.username !== 'juliusomo'" class="comment-btn comment-reply-btn flex"><img src="../images/icon-reply.svg" alt=""/> Reply</button>
-            <div class="flex" v-if="comment.user.username === 'juliusomo'">
-              <button class="comment-btn comment-delete-btn flex"><img src="../images/icon-delete.svg" alt=""/>Delete</button>              
-              <button class="comment-btn comment-edit-btn flex"><img src="../images/icon-edit.svg" alt=""/>Edit</button>
-            </div>
-          </footer>
-        </article>`
-    });
+        <div>
+          <article class="comment-item">
+            <commentHeader :comment="comment" :me="me.username" />
+            <div class="comment-content">{{ comment.content }}</div>
+            <score />
+            <footer class="flex comment-footer">
+              <button v-if="comment.user.username !== me.username" class="comment-btn comment-reply-btn flex" @click="writing = !writing"><img src="../images/icon-reply.svg" alt=""/> Reply</button>
+              <div class="flex" v-if="comment.user.username === me.username">
+                <button class="comment-btn comment-delete-btn flex"><img src="../images/icon-delete.svg" alt=""/>Delete</button>              
+                <button class="comment-btn comment-edit-btn flex"><img src="../images/icon-edit.svg" alt=""/>Edit</button>
+              </div>
+            </footer>
+          </article>
+          <transition name="slideDown">
+            <commentForm v-if="writing" :me="me" />
+          </transition>
+        </div>
+      `,
+      methods: {
+        sending() {
+          this.$root.$emit('writeComment', true)
+        }
+      }
+    };
 
     var vm = new Vue({
       el: '#app',
       data: {
         comments: [],
-        currentUser: {}
+        currentUser: {
+          username: '',
+          image: '',
+        },
+      },
+      components: {
+        comment,
+        commentForm,
       },
       mounted: function() {
         this.fetchComments();
@@ -83,7 +146,12 @@
             .then(response => {
               this.comments = response.data.comments;
               this.currentUser = response.data.currentUser;
+              console.log(this.currentUser);
             })
+        },
+        writeComment: function() {
+          this.sending = true;
+
         }
       }
     })
