@@ -189,4 +189,8 @@ body {
         display: flex;
     }
 
+    .comments-replies-list {
+        margin-left: 2rem;
+    }
+
 }
