@@ -76,7 +76,7 @@
       template: `
         <form class="comment-form comment-item">
           <img class="comment-userimage" :src="me.image.png" alt="me.username ">
-          <textarea class="comment-textarea" placeholder="Write a comment..."></textarea>
+          <textarea v-model="content" class="comment-textarea" placeholder="Write a comment..."></textarea>
           <button class="comment-send-btn">Send</button>
         </form>
       `,
@@ -117,11 +117,6 @@
           </transition>
         </div>
       `,
-      methods: {
-        sending() {
-          this.$root.$emit('writeComment', true)
-        }
-      }
     };
 
     var vm = new Vue({
@@ -132,27 +127,40 @@
           username: '',
           image: '',
         },
+        new_comment: {
+          content: '',
+          user: {
+            username: '',
+            image: '',
+          },
+          createdAt: '',
+        },
       },
       components: {
         comment,
         commentForm,
+      },
+      watch: {
+        comments: {
+          handler(newComments) {
+            localStorage.comments = JSON.stringify(newComments);
+          },
+          deep: true
+        }
       },
       mounted: function() {
         this.fetchComments();
       },
       methods: {
         fetchComments: function() {
-          axios.get('data.json')
-            .then(response => {
-              this.comments = response.data.comments;
-              this.currentUser = response.data.currentUser;
-              console.log(this.currentUser);
-            })
+          if (localStorage.getItem('data')) {
+            this.comments = JSON.parse(localStorage.getItem('data')).comments;
+            this.currentUser = JSON.parse(localStorage.getItem('data')).currentUser;
+          }
         },
-        writeComment: function() {
-          this.sending = true;
-
-        }
+        addComment: function(comment) {
+          this.comments.push(comment);
+        },
       }
     })
   </script>
