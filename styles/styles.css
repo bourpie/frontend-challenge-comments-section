@@ -67,6 +67,14 @@ body {
     grid-area: header;
     color: var(--DarkBlue)
 }
+
+.comment-header-me {
+    color: var(--White);
+    background-color: var(--ModerateBlue);
+    border-radius: 0.2rem;
+    font-size: .75rem;
+    padding: 0.05rem 0.35rem;
+}
 .comment-aside {
     grid-area: aside;
     background-color: var(--VeryLightGray);
@@ -112,6 +120,7 @@ body {
         grid-template-areas:
             "aside header footer"
             "aside main main";
+        padding: 1.5rem;
     }
 
     .comment-aside {
